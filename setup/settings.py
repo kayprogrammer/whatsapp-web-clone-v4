@@ -11,3 +11,11 @@ cloudinary.config(
     api_key=config('CLOUDINARY_API_KEY'),
     api_secret=config('CLOUDINARY_API_SECRET'),
 )
+
+DATABASES = {
+    "DB_NAME": config("POSTGRES_DB"),
+    "USER": config("POSTGRES_USER"),
+    "PASSWORD": config("POSTGRES_PASSWORD"),
+    "HOST": config("PG_HOST"),
+    "PORT": config("PG_PORT"),
+}

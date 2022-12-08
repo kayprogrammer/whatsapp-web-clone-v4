@@ -1,28 +1,6 @@
-from sqlalchemy.orm.interfaces import AttributeExtension, InstrumentationManager
-from sqlalchemy.orm import ColumnProperty
 from setup.main import db
 from . validators import *
 from . models import Timezone
-
-# class InstallValidatorListeners(InstrumentationManager):
-#     def post_configure_attribute(self, class_, key, inst):
-#         """Add validators for any attributes that can be validated."""
-#         prop = inst.prop
-#         # Only interested in simple columns, not relations
-#         if isinstance(prop, ColumnProperty) and len(prop.columns) == 1:
-#             col = prop.columns[0]
-#             # if we have string column with a length, install a length validator
-#             if isinstance(col.type, String) and col.type.length:
-#                 inst.impl.extensions.insert(0, LengthValidator(col.type.length))
-
-# class LengthValidator(AttributeExtension):
-#     def __init__(self, max_length):
-#         self.max_length = max_length
-
-#     def set(self, state, value, oldvalue, initiator):
-#         if len(value) > self.max_length:
-#             raise ValueError(f"{value} must be less than {self.max_length} characters")
-#         return value
 
 class UserManager(object):
     @classmethod
@@ -30,7 +8,7 @@ class UserManager(object):
         name = kwargs.pop('name', None)
         email = kwargs.pop('email', None)
         phone = kwargs.pop('phone', None)
-        password = kwargs.pop('password', None)
+        _password = kwargs.pop('_password', None)
         timezone = kwargs.pop('timezone', None)
 
         if not name:
@@ -41,7 +19,7 @@ class UserManager(object):
 
         validate_email(email)
         validate_phone(phone)
-        validate_password(password)
+        validate_password(_password)
             
         kwargs['is_admin'] = False
         
@@ -61,7 +39,7 @@ class UserManager(object):
         name = kwargs.pop('name', None)
         email = kwargs.pop('email', None)
         phone = kwargs.pop('phone', None)
-        password = kwargs.pop('password', None)
+        _password = kwargs.pop('_password', None)
         timezone = kwargs.pop('timezone', None)
 
         if not name:
@@ -72,7 +50,7 @@ class UserManager(object):
 
         validate_email(email)
         validate_phone(phone)
-        validate_password(password)
+        validate_password(_password)
 
         kwargs['is_admin'] = True
 
