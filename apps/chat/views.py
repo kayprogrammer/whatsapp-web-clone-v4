@@ -3,7 +3,7 @@ from jinja2 import TemplateNotFound
 
 chat_router = Blueprint('chat_router', __name__, template_folder='templates')
 
-@chat_router.route('/', defaults={'page': 'index'})
+# @chat_router.route('/', defaults={'page': 'index'})
 @chat_router.route('/<page>')
 def show(page):
     try:

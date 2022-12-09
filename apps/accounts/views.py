@@ -4,9 +4,10 @@ from jinja2 import TemplateNotFound
 accounts_router = Blueprint('accounts_router', __name__, template_folder='templates')
 
 @accounts_router.route('/', defaults={'page': 'index'})
-@accounts_router.route('/<page>')
-def show(page):
+
+@accounts_router.route('/register', methods=['GET'])
+def show():
     try:
-        return render_template(f'pages/{page}.html')
+        return 'ya'
     except TemplateNotFound:
         abort(404)

@@ -1,4 +1,4 @@
-Runserver - flask --app setup/main run
+Runserver - flask --app setup/main --debug run
 Shell - flask --app setup/main shell
 Create Migrations Repository - flask --app setup/main db init
 Make Migrations - flask --app setup/main db migrate -m "Migration title"
