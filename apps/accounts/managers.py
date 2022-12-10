@@ -58,3 +58,17 @@ class UserManager(object):
         obj = cls(**kwargs)
         db.session.add(obj)
         db.session.commit()
+
+class OtpManager(object):
+    @classmethod
+    def get_or_create(cls, **kwargs):
+        instance = cls.query.filter_by(**kwargs).first()
+        if instance:
+            instance.value = kwargs.get('value')
+            db.session.commit()
+            return instance
+        else:
+            instance = cls(**kwargs)
+            db.session.add(instance)
+            db.session.commit()
+            return instance

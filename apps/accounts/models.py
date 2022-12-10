@@ -38,7 +38,7 @@ THEME_CHOICES = (
     ('SYSTEM_DEFAULT', 'SYSTEM_DEFAULT')
 )
 
-from . managers import UserManager # Leave this here cos of some circular imports error
+from . managers import UserManager, OtpManager # Leave this here cos of some circular imports error
 
 class User(UserManager, TimeStampedUUIDModel):
     name = db.Column(db.String(50))
@@ -95,7 +95,7 @@ class User(UserManager, TimeStampedUUIDModel):
         """Check password."""
         return bcrypt.check_password_hash(self.password.encode("utf-8"), value)
 
-class Otp(TimeStampedUUIDModel):
+class Otp(OtpManager, TimeStampedUUIDModel):
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id'))
     value = db.Column(db.Integer)
 
