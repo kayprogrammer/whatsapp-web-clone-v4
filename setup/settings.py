@@ -1,6 +1,9 @@
 from decouple import config
 import cloudinary
 import cloudinary.uploader
+from pathlib import Path
+
+ROOT_PATH = Path(__file__).parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 

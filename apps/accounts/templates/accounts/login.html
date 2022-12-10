@@ -1,24 +1,21 @@
 {% extends "accounts/index.html" %}
-{% load static %}
 {% block title %}Register{% endblock %}
 {% block content %}
-	<h1 style="font-weight: bold;">WWC V1 LOGIN FORM</h1>
+	<h1 style="font-weight: bold;">WWC V4 LOGIN FORM</h1>
 	<div class="main-agileinfo">
 		<div class="agileits-top">
 			<form method="post" class="login-form">
-				{% csrf_token %}
-				
-				<input type="text" name="email_or_phone" placeholder="Email or Phone" class="text" required/>
+				{{form.email_or_phone(placeholder="Email or Phone")}}
 				<p class="error"></p>
-                <input type="password" name="password" placeholder="Password" class="text" required/>
+				{{form.password(placeholder="Password")}}
 				<p class="error"></p>
 
 				<div class="wthree-text" >
 				<input id="submit-btn" type="submit" value="LOGIN">
 			</form>
 			<p>
-				Don't have an Account? <a href="{% url 'register' %}"> Register Now!</a>
-				<br>Forgot Password? <a href="{% url 'reset_password' %}">Click Here</a>
+				Don't have an Account? <a href="{{ url_for('accounts_router.register') }}"> Register Now!</a>
+				<br>Forgot Password? <a href="{{ url_for('accounts_router.register') }}">Click Here</a>
 			</p>
 			
 		</div>
@@ -32,7 +29,7 @@
 
 			e.preventDefault();
 			$.ajax({
-				url: "{% url 'login' %}",
+				url: "/",
 				data: $(this).serialize(),
 				type: 'POST',
 				dataType: 'json',

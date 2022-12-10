@@ -2,8 +2,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import validates
 from sqlalchemy_utils.types.choice import ChoiceType
 from sqlalchemy.ext.hybrid import hybrid_property
-from apps.common.models import db, TimeStampedUUIDModel
-from setup.main import bcrypt
+from setup.extensions import db, bcrypt
+from apps.common.models import TimeStampedUUIDModel
 from datetime import datetime
 from . validators import *
 
@@ -44,7 +44,7 @@ class User(UserManager, TimeStampedUUIDModel):
     name = db.Column(db.String(50))
     email = db.Column(db.String(), unique=True)
     phone = db.Column(db.String(20), unique=True)
-    _password = db.Column(db.String(8))
+    _password = db.Column(db.String())
     tz = db.Column(db.Integer(), db.ForeignKey('timezone.pkid'))
     avatar = db.Column(db.String(), default="https://res.cloudinary.com/kay-development/image/upload/v1667610903/whatsappclonev1/default/Avatar-10_mvq1cm.jpg")
     theme = db.Column(ChoiceType(THEME_CHOICES), default="DARK")
@@ -76,7 +76,6 @@ class User(UserManager, TimeStampedUUIDModel):
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
     is_online = db.Column(db.DateTime, default=datetime.now)
-    date_joined = db.Column(db.DateTime, default=datetime.now)
 
     blockers = db.relationship('BlockedContact', foreign_keys="BlockedContact.blocker_id", backref='blocker_user', lazy=True)
     blockees = db.relationship('BlockedContact', foreign_keys="BlockedContact.blockee_id", backref='blockee_user', lazy=True)
@@ -89,8 +88,8 @@ class User(UserManager, TimeStampedUUIDModel):
         return self._password
 
     @password.setter
-    def password(self, plain_text_password):
-        self._password = bcrypt.generate_password_hash(plain_text_password).decode('utf-8')
+    def password(self, value):
+        self._password = bcrypt.generate_password_hash(value).decode('UTF-8')
 
     def check_password(self, value):
         """Check password."""

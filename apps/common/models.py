@@ -1,9 +1,9 @@
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-
+from setup.extensions import db
 from datetime import datetime
-db = SQLAlchemy()
+# db = SQLAlchemy()
 class TimeStampedUUIDModel(db.Model):
     __abstract__ = True
     pkid = db.Column(db.Integer, primary_key=True)

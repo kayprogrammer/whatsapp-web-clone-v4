@@ -1,4 +1,3 @@
-{% load static %}
 <!--
 Author: Colorlib
 Author URL: https://colorlib.com
@@ -13,8 +12,8 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Custom Theme files -->
-<link href="{% static 'css/register.css' %}?{% now 'U' %}" rel="stylesheet" type="text/css" media="all" />
-<link rel="shortcut icon" href="{% static 'media/whatsapp.png' %}" type="image/x-icon">
+<link href="{{ url_for('static', filename = 'css/register.css') }}" rel="stylesheet" type="text/css" media="all" />
+<link rel="shortcut icon" href="{{ url_for('static', filename = 'media/whatsapp.png') }}" type="image/x-icon">
 
 <!-- //Custom Theme files -->
 <!-- web font -->
@@ -45,7 +44,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         {% endblock %}
 		<!-- copyright -->
 		<div class="colorlibcopy-agile">
-			<p>© {% now "Y" %} Whatsapp Web Clone V1. All rights reserved | Design by <a href="https://colorlib.com/" target="_blank">Colorlib</a></p>
+			<p id="copyright-date"></p>
 		</div>
 		<!-- //copyright -->
 		<ul class="colorlib-bubbles">
@@ -62,9 +61,13 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 		</ul>
 	</div>
 	<!-- //main -->
-	<script src="{% static 'vendors/js/jquery-3.6.1.min.js' %}"></script>
+	<script src="{{ url_for('static', filename = 'vendors/js/jquery-3.6.1.min.js') }}"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.10.1/dist/sweetalert2.all.min.js"></script>
 	<script>
+		window.onload = function() {
+			var year = new Date().getFullYear()
+			document.getElementById('copyright-date').innerHTML = `© ${year} Whatsapp Web Clone V1. All rights reserved | Design by <a href="https://colorlib.com/" target="_blank">Colorlib</a>`
+		}
 		$.ajaxSetup({
 			headers: {"X-CSRFToken": '{{csrf_token}}'}
 		})

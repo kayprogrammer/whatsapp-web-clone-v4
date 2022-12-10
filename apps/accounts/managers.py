@@ -5,62 +5,56 @@ from . models import Timezone
 class UserManager(object):
     @classmethod
     def create_user(cls, **kwargs):
-        name = kwargs.pop('name', None)
-        email = kwargs.pop('email', None)
-        phone = kwargs.pop('phone', None)
-        _password = kwargs.pop('_password', None)
-        timezone = kwargs.pop('timezone', None)
+        name = kwargs.get('name')
+        email = kwargs.get('email')
+        phone = kwargs.get('phone')
+        password = kwargs.get('password')
+        tz = kwargs.get('tz')
 
         if not name:
             raise ValueError("Users must submit a name")
 
-        if not timezone:
+        if not tz:
             raise ValueError("Users must submit a timezone")
-
+        
         validate_email(email)
         validate_phone(phone)
-        validate_password(_password)
+        validate_password(password)
             
-        kwargs['is_admin'] = False
-        
-        try:
-            timezone = Timezone.query.get(name=name)
-        except:
-            raise ValueError('Invalid timezone')
+        timezone = Timezone.query.filter_by(name=tz).first()
+        if not timezone:
+            raise ValueError('Invalid Timezone')
 
-        kwargs['timezone'] = timezone.id
-        
+        kwargs['tz'] = timezone.pkid
+        kwargs['is_admin'] = False
         obj = cls(**kwargs)
         db.session.add(obj)
         db.session.commit()
 
     @classmethod
     def create_superuser(cls, **kwargs):
-        name = kwargs.pop('name', None)
-        email = kwargs.pop('email', None)
-        phone = kwargs.pop('phone', None)
-        _password = kwargs.pop('_password', None)
-        timezone = kwargs.pop('timezone', None)
+        name = kwargs.get('name')
+        email = kwargs.get('email')
+        phone = kwargs.get('phone')
+        password = kwargs.get('password')
+        tz = kwargs.get('tz')
 
         if not name:
             raise ValueError("Users must submit a name")
 
-        if not timezone:
+        if not tz:
             raise ValueError("Users must submit a timezone")
-
+        
         validate_email(email)
         validate_phone(phone)
-        validate_password(_password)
+        validate_password(password)
+            
+        timezone = Timezone.query.filter_by(name=tz).first()
+        if not timezone:
+            raise ValueError('Invalid Timezone')
 
+        kwargs['tz'] = timezone.pkid
         kwargs['is_admin'] = True
-
-        try:
-            timezone = Timezone.query.get(name=name)
-        except:
-            raise ValueError('Invalid timezone')
-
-        kwargs['timezone'] = timezone.id
-
         obj = cls(**kwargs)
         db.session.add(obj)
         db.session.commit()
