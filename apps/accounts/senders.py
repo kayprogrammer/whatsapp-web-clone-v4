@@ -1,8 +1,9 @@
 from flask_mail import Message
 from flask import render_template, current_app
 import jwt
-from setup.settings import MAIL_USERNAME, SITE_NAME, DEFAULT_FROM_PHONE
+from setup.settings import SITE_NAME, DEFAULT_FROM_PHONE, DEFAULT_FROM_EMAIL
 from . threads import EmailMessageThread, SmsMessageThread
+from . tokens import Token
 import random
 
 class Util:
@@ -12,10 +13,10 @@ class Util:
         subject = 'Activate your account'
         msg = Message(
                 subject=subject,
-                sender = MAIL_USERNAME,
+                sender = DEFAULT_FROM_EMAIL,
                 recipients = [user.email]
             )
-        msg.html = render_template('accounts/email-activation-message.html', name=user.name, domain=current_site, site_name=SITE_NAME, token=Token.get_activation_token(user), email=user.email)
+        msg.html = render_template('accounts/email-activation-message.html', name=user.name, domain=current_site, site_name=SITE_NAME, token=Token.get_activation_token(user), user_id=user.id, sender_email=DEFAULT_FROM_EMAIL)
         EmailMessageThread(current_app._get_current_object(), msg).start()
     
     @staticmethod
@@ -36,7 +37,7 @@ class Util:
         subject = 'Account Verified'
         msg = Message(
                 subject=subject,
-                sender = MAIL_USERNAME,
+                sender = DEFAULT_FROM_EMAIL,
                 recipients = [user.email]
             )
         msg.html = render_template('accounts/welcomemessage.html', domain = current_site, name = user.name, site_name = SITE_NAME )

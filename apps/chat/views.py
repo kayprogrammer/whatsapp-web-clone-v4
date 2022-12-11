@@ -1,12 +1,8 @@
-from flask import Blueprint, render_template, abort
-from jinja2 import TemplateNotFound
+from flask import Blueprint, render_template
+from flask_login import current_user
 
-chat_router = Blueprint('chat_router', __name__, template_folder='templates')
+chat_router = Blueprint('chat_router', __name__, template_folder="templates")
 
-# @chat_router.route('/', defaults={'page': 'index'})
-@chat_router.route('/<page>')
-def show(page):
-    try:
-        return render_template(f'pages/{page}.html')
-    except TemplateNotFound:
-        abort(404)
+@chat_router.route('/home')
+def home():
+    return render_template('chat/index.html', user=current_user)

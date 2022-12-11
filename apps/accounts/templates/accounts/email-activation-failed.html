@@ -5,8 +5,7 @@
 	<div class="main-agileinfo">
 		<div class="agileits-top">
 			<div>
-				<p>Sorry! This link is invalid or has been used already!</p>
-				<!-- <a class="resend-email" href="">RESEND ACTIVATION EMAIL</a> -->
+				<p>Sorry! This link has already been used or expired!</p>
 				<input class="resend-email" onclick="window.location=`{{ url_for('accounts_router.resend_activation_email', email=email) }}`" type="submit" value="RESEND ACTIVATION EMAIL">
             </div>
 		</div>
