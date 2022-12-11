@@ -30,6 +30,7 @@ class UserManager(object):
         obj = cls(**kwargs)
         db.session.add(obj)
         db.session.commit()
+        return obj
 
     @classmethod
     def create_superuser(cls, **kwargs):
@@ -58,6 +59,7 @@ class UserManager(object):
         obj = cls(**kwargs)
         db.session.add(obj)
         db.session.commit()
+        return obj
 
 class OtpManager(object):
     @classmethod

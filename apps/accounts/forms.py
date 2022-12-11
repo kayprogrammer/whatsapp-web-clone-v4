@@ -12,6 +12,15 @@ def validate_password(form, field):
     if len(field.data) < 8:
         raise ValidationError('Password must contain at least 8 characters')
 
+def validate_phone(form, field):
+    user = User.query.filter_by(phone=field.data).first()
+    if user:
+        raise ValidationError("Email already registered")
+def validate_email(form, field):
+    user = User.query.filter_by(email=field.data).first()
+    if user:
+        raise ValidationError("Email already registered")
+
 class RegisterForm(FlaskForm):
     """Register form."""
 
@@ -20,9 +29,11 @@ class RegisterForm(FlaskForm):
             DataRequired(),
             Length(min=3, max=25),
         ],
+        render_kw={'placeholder': 'Name'}
     )
     email = EmailField(
-        validators=[DataRequired(), Length(min=6)],
+        validators=[DataRequired(), Length(min=6), validate_email],
+        render_kw={'placeholder': 'Email address'}
     )
 
     phone = StringField(
@@ -33,22 +44,27 @@ class RegisterForm(FlaskForm):
                 "^\+[0-9]*$",
                 message="Phone number must be in this format: +1234567890"
             ),    
+            validate_phone
         ],
+        render_kw={'placeholder': 'Phone number'}
     )
 
     tz = SelectField(
         validators=[DataRequired()],
+        render_kw={'placeholder': 'Timezone'}
     )
 
     password = PasswordField(
-        validators=[DataRequired(), validate_password]
+        validators=[DataRequired(), validate_password],
+        render_kw={'placeholder': 'Password'}
     )
 
     confirm = PasswordField(
-        [
+        validators=[
             DataRequired(),
-            EqualTo("password", message="Passwords must match"),
+            EqualTo('password', message="Passwords must match"),
         ],
+        render_kw={'placeholder': 'Confirm password'}
     )
 
     terms_agreement = BooleanField(
@@ -60,20 +76,20 @@ class RegisterForm(FlaskForm):
         super(RegisterForm, self).__init__(*args, **kwargs)
         self.user = None
 
-    def validate(self):
-        """Validate the form."""
-        initial_validation = super(RegisterForm, self).validate()
-        if not initial_validation:
-            return False
-        user = User.query.filter_by(email=self.email.data).first()
-        if user:
-            self.email.errors.append("Email already registered")
-            return False
-        user = User.query.filter_by(phone=self.phone.data).first()
-        if user:
-            self.email.errors.append("Phone already registered")
-            return False
-        return True
+    # def validate(self):
+    #     """Validate the form."""
+    #     initial_validation = super(RegisterForm, self).validate()
+    #     if not initial_validation:
+    #         return False
+    #     user = User.query.filter_by(email=self.email.data).first()
+    #     if user:
+    #         self.email.errors.append("Email already registered")
+    #         return False
+    #     user = User.query.filter_by(phone=self.phone.data).first()
+    #     if user:
+    #         self.phone.errors.append("Phone already registered")
+    #         return False
+    #     return True
 
 class LoginForm(FlaskForm):
     email_or_phone = StringField(

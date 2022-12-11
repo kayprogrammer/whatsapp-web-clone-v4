@@ -18,13 +18,14 @@ def register_extensions(app):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
-    mail.init_app(app)
     app.config['MAIL_SERVER'] = MAIL_SERVER
     app.config['MAIL_PORT'] = MAIL_PORT
     app.config['MAIL_USERNAME'] = MAIL_USERNAME
     app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
     app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
     app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
+    mail.init_app(app)
+
 
 def create_app(config):
     app = Flask(__name__, root_path=ROOT_PATH)
@@ -50,3 +51,4 @@ def create_app(config):
     return app
 
 app = create_app(config)
+app.app_context().push()

@@ -3,7 +3,8 @@ from . forms import RegisterForm, LoginForm
 from . models import User, Timezone
 from flask_login import current_user, login_required, login_user, logout_user
 from setup.extensions import login_manager
-from . senders import Token, Util
+from . senders import Util
+from . tokens import Token
 
 accounts_router = Blueprint('accounts_router', __name__, template_folder='templates')
 
