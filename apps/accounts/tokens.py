@@ -1,3 +1,4 @@
+from flask import session
 from datetime import datetime, timedelta
 import jwt
 from setup.settings import SECRET_KEY
@@ -6,9 +7,10 @@ from setup.extensions import db
 
 class Token:
     def get_activation_token(user):
-        return jwt.encode({'activate_user': str(user.id),
-                           'exp':    datetime.utcnow() + timedelta(seconds=30)},
-                           key=SECRET_KEY, algorithm="HS256")
+        token = jwt.encode({'activate_user': str(user.id), 'exp':datetime.utcnow() + timedelta(seconds=900)}, key=SECRET_KEY, algorithm="HS256") 
+        user.current_activation_jwt = token
+        db.session.commit()
+        return token
 
     def verify_activation_token(token):
         try:
@@ -17,19 +19,24 @@ class Token:
 
             user = User.query.filter_by(id=user_id).first()
         except Exception as e:
-            print(e)
+            return None
+        
+        if token != user.current_activation_jwt: # Just to invalidate old tokens that are yet to expire
             return None
         if user.is_email_verified:
             return None
-        print('worked')
+
         user.is_email_verified = True
         db.session.commit()
         return user
 
     def get_reset_token(user):
-        return jwt.encode({'reset_password': user.id,
-                           'exp':    datetime.utcnow() + timedelta(seconds=900)},
+        token = jwt.encode({'reset_password': user.id,
+                           'exp': datetime.utcnow() + timedelta(seconds=900)},
                            key=SECRET_KEY)
+        user.current_activation_jwt = token
+        db.session.commit()
+        return token
 
     def verify_reset_token(token):
         try:

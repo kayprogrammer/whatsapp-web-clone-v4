@@ -1,9 +1,13 @@
 from flask_wtf import FlaskForm
+from flask import request, session, flash, redirect, url_for
 
-from wtforms import PasswordField, StringField, BooleanField, SelectField, EmailField
+from wtforms import PasswordField, StringField, BooleanField, SelectField, EmailField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError
 
-from . models import User
+from datetime import datetime
+from setup.extensions import db
+from . models import User, Otp
+from . senders import Util
 
 def validate_password(form, field):
     special_characters = "[~\!@#\$%\^&\*\(\)_\+{}\":;'\[\]]"
@@ -106,3 +110,36 @@ class LoginForm(FlaskForm):
         """Create instance."""
         super(LoginForm, self).__init__(*args, **kwargs)
         self.user = None
+
+class OtpVerificationForm(FlaskForm):
+    otp = IntegerField(validators=[DataRequired(),])
+
+    def __init__(self, *args, **kwargs):
+        super(OtpVerificationForm, self).__init__(*args, **kwargs)
+        self.user = None
+
+    def validate(self):
+        initial_validation = super(OtpVerificationForm, self).validate()
+        if not initial_validation:
+            return False
+        phone = session.get('phone')
+        otp = self.otp.data
+        user = User.query.filter_by(phone=phone).first()
+
+        otp_object = Otp.query.filter_by(user_id=user.id, value=otp).first()
+        print(otp)
+        if not otp_object:
+            self.otp.errors.append("Invalid Otp")
+            return False
+        diff = datetime.utcnow() - otp_object.created_at
+        print(f'Now {datetime.utcnow()}')
+        print(f'otp {otp_object.created_at}')
+        print(f'Diff {diff.total_seconds()}')
+        if diff.total_seconds() > 900:
+            self.otp.errors.append('Expired Otp')
+            return False
+        user.is_phone_verified = True
+        db.session.commit()
+        if user.is_email_verified:
+            Util.send_welcome_email(request, user)
+        return otp

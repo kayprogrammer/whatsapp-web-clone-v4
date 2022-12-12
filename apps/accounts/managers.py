@@ -66,8 +66,6 @@ class OtpManager(object):
     def get_or_create(cls, **kwargs):
         instance = cls.query.filter_by(**kwargs).first()
         if instance:
-            instance.value = kwargs.get('value')
-            db.session.commit()
             return instance
         else:
             instance = cls(**kwargs)

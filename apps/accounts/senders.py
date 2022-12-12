@@ -2,6 +2,7 @@ from flask_mail import Message
 from flask import render_template, current_app
 import jwt
 from setup.settings import SITE_NAME, DEFAULT_FROM_PHONE, DEFAULT_FROM_EMAIL
+from setup.extensions import db
 from . threads import EmailMessageThread, SmsMessageThread
 from . tokens import Token
 import random
@@ -23,8 +24,9 @@ class Util:
     def send_sms_otp(user):
         code = random.randint(100000, 999999)
         from . models import Otp 
-        Otp.get_or_create(user_id=user.id)
-        
+        otp = Otp.get_or_create(user_id=user.id)
+        otp.value = code
+        db.session.commit()
         body = f'Hello {user.name}! \nYour Phone Verification OTP from {SITE_NAME} is {code} \nExpires in 15 minutes',
         from_ = DEFAULT_FROM_PHONE,
         to = user.phone
@@ -42,4 +44,4 @@ class Util:
             )
         msg.html = render_template('accounts/welcomemessage.html', domain = current_site, name = user.name, site_name = SITE_NAME )
         
-        EmailMessageThread(msg).start()
+        EmailMessageThread(current_app._get_current_object(), msg).start()

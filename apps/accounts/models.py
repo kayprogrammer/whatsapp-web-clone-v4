@@ -1,3 +1,4 @@
+from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import validates
 from sqlalchemy_utils.types.choice import ChoiceType
@@ -40,7 +41,7 @@ THEME_CHOICES = (
 
 from . managers import UserManager, OtpManager # Leave this here cos of some circular imports error
 
-class User(UserManager, TimeStampedUUIDModel):
+class User(UserManager, TimeStampedUUIDModel, UserMixin):
     name = db.Column(db.String(50))
     email = db.Column(db.String(), unique=True)
     phone = db.Column(db.String(20), unique=True)
@@ -68,6 +69,9 @@ class User(UserManager, TimeStampedUUIDModel):
     sounds = db.Column(db.Boolean, default=True)
     security_notifications = db.Column(db.Boolean, default=True)
     #----------------------#
+
+    current_activation_jwt = db.Column(db.String(), nullable=True)
+    current_password_jwt = db.Column(db.String(), nullable=True)
 
     otp = db.relationship("Otp", uselist=False, backref="user")
     terms_agreement = db.Column(db.Boolean, default=False)
