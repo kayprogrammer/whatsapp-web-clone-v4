@@ -45,3 +45,15 @@ class Util:
         msg.html = render_template('accounts/welcomemessage.html', domain = current_site, name = user.name, site_name = SITE_NAME )
         
         EmailMessageThread(current_app._get_current_object(), msg).start()
+
+    @staticmethod
+    def send_password_reset_email(request, user):
+        current_site = f'{request.scheme}://{request.host}'
+        subject = 'Reset your password'
+        msg = Message(
+                subject=subject,
+                sender = DEFAULT_FROM_EMAIL,
+                recipients = [user.email]
+            )
+        msg.html = render_template('accounts/email-password-reset.html', name=user.name, domain=current_site, site_name=SITE_NAME, token=Token.get_reset_token(user), user_id=user.id, sender_email=DEFAULT_FROM_EMAIL)
+        EmailMessageThread(current_app._get_current_object(), msg).start()

@@ -143,3 +143,18 @@ class OtpVerificationForm(FlaskForm):
         if user.is_email_verified:
             Util.send_welcome_email(request, user)
         return otp
+
+class PasswordResetRequestForm(FlaskForm):
+    email = EmailField(validators=[DataRequired(), ])
+    
+    def __init__(self, *args, **kwargs):
+        super(PasswordResetRequestForm, self).__init__(*args, **kwargs)
+        self.user = None
+
+class PasswordResetForm(FlaskForm):
+    newpassword = PasswordField(validators=[DataRequired(), validate_password])
+    confirm = PasswordField(validators=[DataRequired(), EqualTo('newpassword', message="Passwords must match"),])
+    
+    def __init__(self, *args, **kwargs):
+        super(PasswordResetForm, self).__init__(*args, **kwargs)
+        self.user = None

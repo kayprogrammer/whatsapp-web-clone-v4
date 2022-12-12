@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from . forms import RegisterForm, LoginForm, OtpVerificationForm
+from . forms import RegisterForm, LoginForm, OtpVerificationForm, PasswordResetRequestForm, PasswordResetForm
 from . models import User, Timezone
 from flask_login import current_user, login_user, logout_user
 from . decorators import login_required, logout_required
-from setup.extensions import login_manager
+from setup.extensions import login_manager, db
 from . senders import Util
 from . tokens import Token
 
@@ -110,7 +110,6 @@ def resend_otp():
 def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
-        print(form.email_or_phone.data)
         user = User.query.filter_by(email=form.email_or_phone.data).first() or User.query.filter_by(phone=form.email_or_phone.data).first()
         if not user:
             flash('Invalid credentials', 'error')
@@ -137,6 +136,71 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('accounts_router.login'))
+
+@accounts_router.route('/request-password-reset', methods=['GET', 'POST'])
+@logout_required
+def password_reset_request():
+    detail = 'first_view'
+    form = PasswordResetRequestForm(request.form)
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            Util.send_password_reset_email(request, user)
+            session['password_reset_email'] = user.email
+            detail = 'second_view'
+    return render_template('accounts/password-reset-request.html', detail=detail, form=form)
+
+@accounts_router.route('/verify-password-reset-token/<token>/<user_id>', methods=['GET', 'POST'])
+@logout_required
+def verify_password_reset_token(token, user_id):
+    detail = 'invalid_token'
+    form = None
+    try:
+        user_obj = User.query.filter_by(id=user_id).first()
+    except:
+        flash('You entered an invalid link!', 'error')
+        return redirect(url_for("accounts_router.login"))
+    user = Token.verify_reset_token(token)
+    
+    if user and user.id != user_obj.id:
+        flash('You entered an invalid link!', 'error')
+        return redirect(url_for("accounts_router.login"))
+    elif user and user.id == user_obj.id:
+        session['password_reset_email'] = user_obj.email
+        return redirect(url_for('accounts_router.reset_password'))
+    return render_template('accounts/password-reset.html', detail=detail, form=form, email=user_obj.email)
+
+@accounts_router.route('/reset-password', methods=['GET', 'POST'])
+@logout_required
+def reset_password():
+    email=session.get('password_reset_email')
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash('Something went wrong', 'success')
+        return redirect(url_for('accounts_router.login'))
+    detail = 'valid_token'
+    form = PasswordResetForm(request.form)
+    if form.validate_on_submit():
+        if user:
+            user.password = form.newpassword.data
+            db.session.commit()
+            flash('Password reset successful', 'success')
+            session['password_reset_email'] = None
+            return redirect(url_for("accounts_router.login"))
+    return render_template('accounts/password-reset.html', detail=detail, form=form, email=email)
+
+@accounts_router.route('/resend-password-token/<email>', methods=['GET'])
+@logout_required
+def resend_password_token(email):
+    detail = 'third_view'
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash('Something went wrong!', 'error')
+        return redirect(url_for("accounts_router.login"))
+    
+    Util.send_password_reset_email(request, user)
+    return render_template('accounts/password-reset-request.html', detail=detail, form=None)
+
 
 @login_manager.user_loader
 def load_user(user_id):

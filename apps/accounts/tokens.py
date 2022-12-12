@@ -31,21 +31,24 @@ class Token:
         return user
 
     def get_reset_token(user):
-        token = jwt.encode({'reset_password': user.id,
-                           'exp': datetime.utcnow() + timedelta(seconds=900)},
-                           key=SECRET_KEY)
-        user.current_activation_jwt = token
+        token = jwt.encode({'reset_password': str(user.id),
+                           'exp': datetime.utcnow() + timedelta(seconds=60)},
+                           key=SECRET_KEY, algorithm="HS256")
+        user.current_password_jwt = token
         db.session.commit()
         return token
 
     def verify_reset_token(token):
         try:
             user_id = jwt.decode(token,
-              key=SECRET_KEY)['reset_password']
+              key=SECRET_KEY, algorithms=["HS256"])['reset_password']
 
             user = User.query.filter_by(id=user_id).first()
         except Exception as e:
             print(e)
-            return
-        print('worked')
+            return None
+
+        if token != user.current_password_jwt: # Just to invalidate old tokens that are yet to expire
+            return None
+
         return user
