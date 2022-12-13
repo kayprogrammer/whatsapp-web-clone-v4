@@ -127,14 +127,10 @@ class OtpVerificationForm(FlaskForm):
         user = User.query.filter_by(phone=phone).first()
 
         otp_object = Otp.query.filter_by(user_id=user.id, value=otp).first()
-        print(otp)
         if not otp_object:
             self.otp.errors.append("Invalid Otp")
             return False
         diff = datetime.utcnow() - otp_object.created_at
-        print(f'Now {datetime.utcnow()}')
-        print(f'otp {otp_object.created_at}')
-        print(f'Diff {diff.total_seconds()}')
         if diff.total_seconds() > 900:
             self.otp.errors.append('Expired Otp')
             return False

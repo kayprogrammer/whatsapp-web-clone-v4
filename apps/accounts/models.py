@@ -1,12 +1,17 @@
 from flask_login import UserMixin
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import validates
-from sqlalchemy_utils.types.choice import ChoiceType
 from sqlalchemy.ext.hybrid import hybrid_property
+import sqlalchemy.types as types
+
 from setup.extensions import db, bcrypt
 from apps.common.models import TimeStampedUUIDModel
 from datetime import datetime
+
+
 from . validators import *
+from . choices import *
 
 class Timezone(TimeStampedUUIDModel):
     __tablename__ = 'timezone'
@@ -15,31 +20,25 @@ class Timezone(TimeStampedUUIDModel):
     def __repr__(self):
         return '<Timezone %r>' % self.name
 
-class PRIVACYCHOICES:
-    last_seen = (
-        ('EVERYONE', 'EVERYONE'),
-        ('MY CONTACTS', 'MY CONTACTS'),
-        ('NOBODY', 'NOBODY')
-    )
-
-    avatar_status = last_seen
-    about_status = last_seen
-    groups_status = last_seen
-
-    message_timer = (
-        ('24 HOURS', '24 HOURS'),
-        ('7 DAYS', '7 DAYS'),
-        ('90 DAYS', '90 DAYS'),
-        ('OFF', 'OFF')
-    )
-
-THEME_CHOICES = (
-    ('LIGHT', 'LIGHT'),
-    ('DARK', 'DARK'),
-    ('SYSTEM_DEFAULT', 'SYSTEM_DEFAULT')
-)
-
 from . managers import UserManager, OtpManager # Leave this here cos of some circular imports error
+
+class ChoiceType(types.TypeDecorator):
+
+    impl = types.String
+
+    def __init__(self, choices, **kw):
+        self.choices = dict(choices)
+        super(ChoiceType, self).__init__(**kw)
+
+    def process_bind_param(self, value, dialect):
+        l = [k for k, v in self.choices.items() if v == value]
+
+        if len(l) < 1:
+            raise ValueError('Invalid Choice')
+        return l[0]
+
+    def process_result_value(self, value, dialect):
+        return self.choices[value]
 
 class User(UserManager, TimeStampedUUIDModel, UserMixin):
     name = db.Column(db.String(50))
@@ -70,8 +69,8 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
     security_notifications = db.Column(db.Boolean, default=True)
     #----------------------#
 
-    current_activation_jwt = db.Column(db.String(), nullable=True)
-    current_password_jwt = db.Column(db.String(), nullable=True)
+    current_activation_jwt = db.Column(MutableDict.as_mutable(JSONB), default={'token': "", 'used': False})
+    current_password_jwt = db.Column(MutableDict.as_mutable(JSONB), default={'token': "", 'used': False})
 
     otp = db.relationship("Otp", uselist=False, backref="user")
     terms_agreement = db.Column(db.Boolean, default=False)

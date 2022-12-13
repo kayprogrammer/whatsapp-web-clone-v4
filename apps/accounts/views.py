@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from . forms import RegisterForm, LoginForm, OtpVerificationForm, PasswordResetRequestForm, PasswordResetForm
 from . models import User, Timezone
-from flask_login import current_user, login_user, logout_user
+from flask_login import login_user, logout_user
 from . decorators import login_required, logout_required
 from setup.extensions import login_manager, db
 from . senders import Util
@@ -12,7 +12,6 @@ accounts_router = Blueprint('accounts_router', __name__, template_folder="templa
 @accounts_router.route('/register', methods=['GET', 'POST'])
 @logout_required
 def register():
-    print()
     form = RegisterForm(request.form)
     timezones = Timezone.query.all()
     timezones_list=[(t.name, t.name) for t in timezones]
@@ -27,17 +26,14 @@ def register():
             terms_agreement=form.terms_agreement.data,
         )
         Util.send_verification_email(request, user)
-        render_template('accounts/email-activation-request.html', detail='sent', email=user.email)
-    else:
-        print(form.errors)
+        return render_template('accounts/email-activation-request.html', detail='sent', email=user.email)
     return render_template('accounts/register.html', form=form)
 
 @accounts_router.route('/activate-user/<token>/<user_id>/', methods=['GET'])
 @logout_required
 def activate_user(token, user_id):
-    try:
-        user_obj = User.query.filter_by(id=user_id).first()
-    except:
+    user_obj = User.query.filter_by(id=user_id).first()
+    if not user_obj:
         flash('You entered an invalid link!', 'error')
         return redirect(url_for("accounts_router.login"))
     user = Token.verify_activation_token(token)
@@ -46,6 +42,11 @@ def activate_user(token, user_id):
     if user.id != user_obj.id:
         flash('You entered an invalid link!', 'error')
         return redirect(url_for("accounts_router.login"))
+
+    user.current_activation_jwt['used'] = True
+    user.is_email_verified = True
+    db.session.commit()
+
     if not user.is_phone_verified:
         Util.send_sms_otp(user)
         session['phone'] = user.phone
@@ -81,8 +82,6 @@ def verify_otp():
     if form.validate_on_submit():
         flash('Verification complete! You can login now!', 'success')
         return redirect(url_for('accounts_router.login'))
-    else:
-        print(form.errors)
     return render_template('accounts/otp-verification.html', form=form)
 
 @accounts_router.route('/resend-otp', methods=['GET'])
@@ -108,6 +107,7 @@ def resend_otp():
 @accounts_router.route('/login', methods=['GET', 'POST'])
 @logout_required
 def login():
+    session['password_reset_email'] = None
     form = LoginForm(request.form)
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email_or_phone.data).first() or User.query.filter_by(phone=form.email_or_phone.data).first()
@@ -127,8 +127,6 @@ def login():
             return redirect(url_for('accounts_router.verify_otp'))
         login_user(user)
         return redirect(url_for("chat_router.home"))
-    else:
-        print(form.errors)
     return render_template('accounts/login.html', form=form)
 
 @accounts_router.route('/logout', methods=['GET'])
@@ -176,7 +174,7 @@ def reset_password():
     email=session.get('password_reset_email')
     user = User.query.filter_by(email=email).first()
     if not user:
-        flash('Something went wrong', 'success')
+        flash('Not allowed!', 'error')
         return redirect(url_for('accounts_router.login'))
     detail = 'valid_token'
     form = PasswordResetForm(request.form)

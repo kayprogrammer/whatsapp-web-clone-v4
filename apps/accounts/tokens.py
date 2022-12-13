@@ -8,7 +8,7 @@ from setup.extensions import db
 class Token:
     def get_activation_token(user):
         token = jwt.encode({'activate_user': str(user.id), 'exp':datetime.utcnow() + timedelta(seconds=900)}, key=SECRET_KEY, algorithm="HS256") 
-        user.current_activation_jwt = token
+        user.current_activation_jwt = {'token': token, 'used': False }
         db.session.commit()
         return token
 
@@ -21,20 +21,22 @@ class Token:
         except Exception as e:
             return None
         
-        if token != user.current_activation_jwt: # Just to invalidate old tokens that are yet to expire
-            return None
-        if user.is_email_verified:
+        if not user:
             return None
 
-        user.is_email_verified = True
-        db.session.commit()
+        if token != user.current_activation_jwt.get('token'): # Just to invalidate old tokens that are yet to expire
+            return None
+
+        if user.current_activation_jwt.get('used') == True:
+            return None
         return user
 
     def get_reset_token(user):
         token = jwt.encode({'reset_password': str(user.id),
-                           'exp': datetime.utcnow() + timedelta(seconds=60)},
+                           'exp': datetime.utcnow() + timedelta(seconds=900)},
                            key=SECRET_KEY, algorithm="HS256")
-        user.current_password_jwt = token
+        user.current_password_jwt = {'token': token, 'used': False }
+
         db.session.commit()
         return token
 
@@ -45,10 +47,17 @@ class Token:
 
             user = User.query.filter_by(id=user_id).first()
         except Exception as e:
-            print(e)
             return None
 
-        if token != user.current_password_jwt: # Just to invalidate old tokens that are yet to expire
+        if not user:
             return None
 
+        if token != user.current_password_jwt.get('token'): # Just to invalidate old tokens that are yet to expire
+            return None
+
+        if user.current_password_jwt.get('used') == True:
+            return None
+
+        user.current_password_jwt['used'] = True
+        db.session.commit()
         return user

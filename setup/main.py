@@ -13,7 +13,9 @@ from apps.common.models import TimeStampedUUIDModel
 from apps.accounts.models import User, Timezone, BlockedContact, Otp
 
 def register_extensions(app):
-    db.init_app(app) 
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
     Migrate(app, db)
     bcrypt.init_app(app)
     login_manager.init_app(app)
