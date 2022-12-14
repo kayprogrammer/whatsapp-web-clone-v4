@@ -49,7 +49,7 @@ def activate_user(token, user_id):
 
     if not user.is_phone_verified:
         Util.send_sms_otp(user)
-        session['phone'] = user.phone
+        session['verification_phone'] = user.phone
         flash('Activation successful!. Verify your phone now!', 'success')
         return redirect(url_for('accounts_router.verify_otp'))
 
@@ -57,9 +57,10 @@ def activate_user(token, user_id):
     Util.send_welcome_email(request, user)
     return redirect(url_for("accounts_router.login"))
 
-@accounts_router.route('/resend-activation-email/<email>/', methods=['GET'])
+@accounts_router.route('/resend-activation-email/', methods=['GET'])
 @logout_required
-def resend_activation_email(email):
+def resend_activation_email():
+    email = request.cookies.get('activation_email')
     user_obj = User.query.filter_by(email=email).first()
     if not user_obj:
         flash('Something went wrong!', 'error')
@@ -74,7 +75,7 @@ def resend_activation_email(email):
 @accounts_router.route('/verify-otp', methods=['GET', 'POST'])
 @logout_required
 def verify_otp():
-    phone = session.get('phone')
+    phone = session.get('verification_phone')
     if not phone:
         flash('Not allowed', 'error')
         return redirect(url_for('accounts_router.login'))
@@ -87,7 +88,7 @@ def verify_otp():
 @accounts_router.route('/resend-otp', methods=['GET'])
 @logout_required
 def resend_otp():
-    phone = session.get('phone')
+    phone = session.get('verification_phone')
     if not phone:
         flash('Something went wrong', 'error')
         return redirect(url_for('accounts_router.login'))
@@ -120,10 +121,12 @@ def login():
             return redirect(url_for('accounts_router.login')) 
 
         if not user.is_email_verified:
+            Util.send_verification_email(request, user)
             return render_template('accounts/email-activation-request.html', detail='request', email=user.email)
 
         if not user.is_phone_verified:
-            session['phone'] = user.phone
+            Util.send_sms_otp(user)
+            session['verification_phone'] = user.phone
             return redirect(url_for('accounts_router.verify_otp'))
         login_user(user)
         return redirect(url_for("chat_router.home"))
@@ -198,7 +201,6 @@ def resend_password_token(email):
     
     Util.send_password_reset_email(request, user)
     return render_template('accounts/password-reset-request.html', detail=detail, form=None)
-
 
 @login_manager.user_loader
 def load_user(user_id):

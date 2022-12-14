@@ -6,8 +6,14 @@
 		<div class="agileits-top">
 			<div>
 				<p>Sorry! This link has already been used or expired!</p>
-				<input class="resend-email" onclick="window.location=`{{ url_for('accounts_router.resend_activation_email', email=email) }}`" type="submit" value="RESEND ACTIVATION EMAIL">
+				<input class="resend-email" onclick="window.location=`{{ url_for('accounts_router.resend_activation_email') }}`" type="submit" value="RESEND ACTIVATION EMAIL">
             </div>
 		</div>
 	</div>
+{% endblock %}
+
+{% block js %}
+	<script>
+		document.cookie = 'activation_email=' + '{{email}}' + ";domain=;path=/"
+	</script>
 {% endblock %}

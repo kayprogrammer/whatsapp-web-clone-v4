@@ -31,21 +31,17 @@
 
 {% block js %}
 	<script type="text/javascript">
-		window.onload = function(){
-            
-            var localtz = Intl.DateTimeFormat().resolvedOptions().timeZone // Get local timezone
-			var select_element = document.getElementById('tz') // Get select element
-            var options = Array.from(document.querySelectorAll('option')); 
-            try{
-                var optionMatch = options.find(el => {
-                    return el.textContent == localtz;
-                });
+		var localtz = Intl.DateTimeFormat().resolvedOptions().timeZone // Get local timezone
+		var select_element = document.getElementById('tz') // Get select element
+		var options = Array.from(document.querySelectorAll('option')); 
+		try{
+			var optionMatch = options.find(el => {
+				return el.textContent == localtz;
+			});
 
-                select_element.value = optionMatch.value
-            }catch{
-                select_element.value = ''                
-            }
-        }
-
+			select_element.value = optionMatch.value
+		}catch{
+			select_element.value = ''   
+		}
     </script>
 {% endblock %}

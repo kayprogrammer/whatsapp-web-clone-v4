@@ -19,11 +19,11 @@ def validate_password(form, field):
 def validate_phone(form, field):
     user = User.query.filter_by(phone=field.data).first()
     if user:
-        raise ValidationError("Email already registered")
+        raise ValidationError("Phone number already registered")
 def validate_email(form, field):
     user = User.query.filter_by(email=field.data).first()
     if user:
-        raise ValidationError("Email already registered")
+        raise ValidationError("Email address already registered")
 
 class RegisterForm(FlaskForm):
     """Register form."""
@@ -80,21 +80,6 @@ class RegisterForm(FlaskForm):
         super(RegisterForm, self).__init__(*args, **kwargs)
         self.user = None
 
-    # def validate(self):
-    #     """Validate the form."""
-    #     initial_validation = super(RegisterForm, self).validate()
-    #     if not initial_validation:
-    #         return False
-    #     user = User.query.filter_by(email=self.email.data).first()
-    #     if user:
-    #         self.email.errors.append("Email already registered")
-    #         return False
-    #     user = User.query.filter_by(phone=self.phone.data).first()
-    #     if user:
-    #         self.phone.errors.append("Phone already registered")
-    #         return False
-    #     return True
-
 class LoginForm(FlaskForm):
     email_or_phone = StringField(
         validators=[
@@ -130,7 +115,7 @@ class OtpVerificationForm(FlaskForm):
         if not otp_object:
             self.otp.errors.append("Invalid Otp")
             return False
-        diff = datetime.utcnow() - otp_object.created_at
+        diff = datetime.utcnow() - otp_object.updated_at
         if diff.total_seconds() > 900:
             self.otp.errors.append('Expired Otp')
             return False

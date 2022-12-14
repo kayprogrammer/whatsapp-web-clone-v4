@@ -7,7 +7,7 @@ from setup.extensions import db
 
 class Token:
     def get_activation_token(user):
-        token = jwt.encode({'activate_user': str(user.id), 'exp':datetime.utcnow() + timedelta(seconds=900)}, key=SECRET_KEY, algorithm="HS256") 
+        token = jwt.encode({'activate_user': str(user.id), 'exp':datetime.utcnow() + timedelta(seconds=10)}, key=SECRET_KEY, algorithm="HS256") 
         user.current_activation_jwt = {'token': token, 'used': False }
         db.session.commit()
         return token
