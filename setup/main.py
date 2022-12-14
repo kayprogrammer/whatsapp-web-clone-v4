@@ -11,6 +11,7 @@ from apps.status.views import status_router
 
 from apps.common.models import TimeStampedUUIDModel 
 from apps.accounts.models import User, Timezone, BlockedContact, Otp
+from apps.chat.models import Message
 
 def register_extensions(app):
     db.init_app(app)
@@ -42,6 +43,8 @@ def create_app(config):
     admin.add_view(ModelView(Timezone, db.session))
     admin.add_view(ModelView(BlockedContact, db.session))
     admin.add_view(ModelView(Otp, db.session))
+    admin.add_view(ModelView(Message, db.session))
+
 
     # REGISTER BLUEPRINTS
     app.register_blueprint(accounts_router, url_prefix="/accounts")

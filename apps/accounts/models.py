@@ -7,6 +7,8 @@ import sqlalchemy.types as types
 
 from setup.extensions import db, bcrypt
 from apps.common.models import TimeStampedUUIDModel
+from apps.chat.models import Message
+
 from datetime import datetime
 
 
@@ -72,7 +74,7 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
     current_activation_jwt = db.Column(MutableDict.as_mutable(JSONB), default={'token': "", 'used': False})
     current_password_jwt = db.Column(MutableDict.as_mutable(JSONB), default={'token': "", 'used': False})
 
-    otp = db.relationship("Otp", uselist=False, backref="user")
+    otp = db.relationship("Otp", uselist=False, backref="user", passive_deletes=True)
     terms_agreement = db.Column(db.Boolean, default=False)
     is_email_verified = db.Column(db.Boolean, default=False)
     is_phone_verified = db.Column(db.Boolean, default=False)
@@ -82,6 +84,10 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
 
     blockers = db.relationship('BlockedContact', foreign_keys="BlockedContact.blocker_id", backref='blocker_user', lazy=True)
     blockees = db.relationship('BlockedContact', foreign_keys="BlockedContact.blockee_id", backref='blockee_user', lazy=True)
+
+    sender_messages = db.relationship('Message', foreign_keys="Message.sender_id", backref='sender_user', lazy=True, passive_deletes=True)
+    receiver_messages = db.relationship('Message', foreign_keys="Message.receiver_id", backref='receiver_user', lazy=True, passive_deletes=True)
+
 
     def __repr__(self):
         return self.name
@@ -99,7 +105,7 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
         return bcrypt.check_password_hash(self.password.encode("utf-8"), value)
 
 class Otp(OtpManager, TimeStampedUUIDModel):
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
     value = db.Column(db.Integer)
 
 class BlockedContact(TimeStampedUUIDModel):
