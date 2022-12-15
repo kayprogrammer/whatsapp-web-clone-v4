@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, session
 from flask_login import current_user
-from sqlalchemy import or_, case, desc
+from sqlalchemy import or_, case, literal_column
 from apps.accounts.decorators import login_required
+from apps.accounts.models import User 
 from . models import Message
 
 chat_router = Blueprint('chat_router', __name__, template_folder="templates")
@@ -16,18 +17,19 @@ def before_request():
 @chat_router.route('/home')
 def home():
     
+    # Chat Inbox list (Message Threads) query with SQLAlchemy
     user = current_user
-    messages = Message.query.filter(or_(Message.sender_id == user.id, Message.receiver_id == user.id))
-    other = case([(Message.sender_id==user.id, 'receiver_id'),], else_='sender_id')
-    print(other)
-    messages = messages.order_by(other, desc(Message.created_at)).distinct(other)
-    messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
+    messages = Message.query.filter(
+        or_(Message.sender_id == user.id, Message.receiver_id == user.id)
+    )
+    other = case(
+        [(Message.sender_id == user.id, literal_column("receiver_id") )], 
+        else_=literal_column("sender_id")
+    )
+    inbox_list = messages.order_by(
+        other, Message.created_at.desc()
+    ).distinct(other).order_by(Message.created_at.desc())
     
-    # inbox_list = messages.annotate(other=Case(When(sender=user, then=F('receiver')), default=F('sender'), output_field=CharField())).order_by('other', '-created_at').distinct('other')
-    # sorted_inbox_list = sorted(inbox_list, key=lambda_stmt x: x.created_at, reverse=True)
-    # all_users = User.objects.filter(is_email_verified=True, is_phone_verified=True, is_active=True).exclude(id=user.id).order_by('name')
-    # print(messages)
-    print(messages)
-    for m in messages:
-        print(m.text)
-    return render_template('chat/index.html', user=current_user)
+    all_users = User.query.filter(User.is_email_verified==True, User.is_phone_verified==True, User.is_active==True, User.id != user.id).order_by('name')
+
+    return render_template('chat/index.html', user=current_user, all_users=all_users, inbox_list=inbox_list)
