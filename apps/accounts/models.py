@@ -51,7 +51,7 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
     avatar = db.Column(db.String(), default="https://res.cloudinary.com/kay-development/image/upload/v1667610903/whatsappclonev1/default/Avatar-10_mvq1cm.jpg")
     theme = db.Column(ChoiceType(THEME_CHOICES), default="DARK")
     wallpaper = db.Column(db.String(), default="https://res.cloudinary.com/kay-development/image/upload/v1670371074/whatsappwebclonev4/bg-chat_lrn705.png")
-    status = db.Column(db.String(300), default="Hey There! I'm using Whatsapp Web Clone V1!")
+    status = db.Column(db.String(300), default="Hey There! I'm using Whatsapp Web Clone V4!")
 
     #---Privacy Settings---#
     last_seen = db.Column(ChoiceType(PRIVACYCHOICES.last_seen), default="EVERYONE")
