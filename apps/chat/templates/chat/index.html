@@ -160,28 +160,28 @@
             <div class="chats">
                 {% for i in inbox_list %}
                 <!-- Chats 3 -->
-                <div class="block chat-list" data-phone="{% if i.sender_id == user.id %}{{i.receiver_id.phone}}{% else %}{{i.sender_id.phone}}{% endif %}" onclick="openRightSide(this)">
+                <div class="block chat-list" data-phone="{% if i.sender_id == user.id %}{{i.receiver.phone}}{% else %}{{i.sender.phone}}{% endif %}" onclick="openRightSide(this)">
                     <!-- Img -->
                     <div class="imgBox">
-                        <img style="object-position: top; object-fit: cover;" src="{% if i.sender_id == user.id %}{{i.receiver_id.avatarURL}}{% else %}{{i.sender_id.avatarURL}}{% endif %}" class="cover">
+                        <img style="object-position: top; object-fit: cover;" src="{% if i.sender_id == user.id %}{{i.receiver.avatar}}{% else %}{{i.sender.avatar}}{% endif %}" class="cover">
                     </div>
                     <!-- Text -->
                     <div class="h-text">
                         <div class="head">
-                            <h4 title="Olivia" aria-label="Olivia">{% if i.sender_id == user.id %}{{i.receiver_id.name}}{% else %}{{i.sender_id.name}}{% endif %}</h4>
+                            <h4 title="Olivia" aria-label="Olivia">{% if i.sender_id == user.id %}{{i.receiver.name}}{% else %}{{i.sender.name}}{% endif %}</h4>
                             <p class="time">{{i.created_at|datetimefilter}}</p>
                         </div>
                         <div class="message-chat">
                             <div class="chat-text-icon">
                                 <span class="thanks">{{i.text}}</span>
                                 <div class="unread">
-                                    {% if i.sender == request.user %}
-                                        {% if messages %}
-                                            <span class="numb">{{messages}}</span>
+                                    {% if i.sender_id == user.id %}
+                                        {% if messages|unread_messages_count(i.receiver) > 0 %}
+                                            <span class="numb">{{messages|unread_messages_count(i.receiver)}}</span>
                                         {% endif %}
                                     {% else %}
-                                        {% if messages %}
-                                            <span class="numb">{{messages}}</span>
+                                        {% if messages|unread_messages_count(i.sender) > 0 %}
+                                            <span class="numb">{{messages|unread_messages_count(i.sender) }}</span>
                                         {% endif %}
                                     {% endif %}
                                     <div class="icon-more">
@@ -277,9 +277,11 @@
                     </div>
                 </div>
                 {% for user in all_users %}
+                    {% if loop.changed(user.name.0|title) %}
                     <div class="a">
-                        <h3>{{user.name}}</h3>
+                        <h3>{{user.name.0|title}}</h3>
                     </div>
+                    {% endif %}
                     <div class="block top" data-phone="{{user.phone}}" onclick="openRightSide(this)">
                         <!-- Img -->
                         <div class="imgBox">

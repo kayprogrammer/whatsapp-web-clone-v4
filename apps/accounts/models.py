@@ -7,7 +7,7 @@ import sqlalchemy.types as types
 
 from setup.extensions import db, bcrypt
 from apps.common.models import TimeStampedUUIDModel
-from apps.chat.models import Message
+# from apps.chat.models import Message
 
 from datetime import datetime
 
@@ -47,7 +47,7 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
     email = db.Column(db.String(), unique=True)
     phone = db.Column(db.String(20), unique=True)
     _password = db.Column(db.String())
-    tz = db.Column(db.Integer(), db.ForeignKey('timezone.pkid'))
+    tz_id = db.Column(db.Integer(), db.ForeignKey('timezone.pkid', ondelete='SET NULL'))
     avatar = db.Column(db.String(), default="https://res.cloudinary.com/kay-development/image/upload/v1667610903/whatsappclonev1/default/Avatar-10_mvq1cm.jpg")
     theme = db.Column(ChoiceType(THEME_CHOICES), default="DARK")
     wallpaper = db.Column(db.String(), default="https://res.cloudinary.com/kay-development/image/upload/v1670371074/whatsappwebclonev4/bg-chat_lrn705.png")
@@ -93,6 +93,13 @@ class User(UserManager, TimeStampedUUIDModel, UserMixin):
         return self.name
 
     @hybrid_property
+    def tzname(self):
+        tz_name = Timezone.query.filter_by(pkid=self.tz_id).first()
+        if tz_name:
+            return tz_name.name
+        return 'UTC'
+
+    @hybrid_property
     def password(self):
         return self._password
 
@@ -111,6 +118,14 @@ class Otp(OtpManager, TimeStampedUUIDModel):
 class BlockedContact(TimeStampedUUIDModel):
     blocker_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id'))
     blockee_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id'))
+
+    @hybrid_property
+    def blocker(self):
+        return User.query.filter_by(id=self.blocker_id).first()
+
+    @hybrid_property
+    def blockee(self):
+        return User.query.filter_by(id=self.blockee_id).first()
 
     def __repr__(self):
         try:

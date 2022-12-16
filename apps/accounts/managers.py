@@ -25,7 +25,7 @@ class UserManager(object):
         if not timezone:
             raise ValueError('Invalid Timezone')
 
-        kwargs['tz'] = timezone.pkid
+        kwargs['tz_id'] = timezone.pkid
         kwargs['is_admin'] = False
         obj = cls(**kwargs)
         db.session.add(obj)
@@ -54,7 +54,7 @@ class UserManager(object):
         if not timezone:
             raise ValueError('Invalid Timezone')
 
-        kwargs['tz'] = timezone.pkid
+        kwargs['tz_id'] = timezone.pkid
         kwargs['is_admin'] = True
         obj = cls(**kwargs)
         db.session.add(obj)
