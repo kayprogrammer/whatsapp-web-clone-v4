@@ -633,7 +633,7 @@
         var message = $(".send-message")
         // console.log(/\p{Emoji}/u.test(message.val()))
         $.ajax({
-            url: "/chat/send-message/",
+            url: "/chat/send-message",
             method: "POST",
             data: {
                 "phone": phone,
@@ -641,6 +641,7 @@
             },
             dataType: "json",
             success: function(response) {
+                console.log(response)
                 if (response?.success){
 
                     message.val('')
