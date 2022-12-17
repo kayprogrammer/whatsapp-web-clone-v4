@@ -101,13 +101,14 @@ function openRightSide(e) {
     var unread_count_element = $(e).children('.h-text').children('.message-chat').children().children('div').children('span')
      
     $.ajax({
-        url: "/chat/show-direct-messages/",
+        url: "/chat/show-direct-messages",
         type: "POST",
-        data: JSON.stringify({
+        data: {
             "phone": phone,
-        }),
+        },
         dataType: "json",
         success: function(response){
+            console.log(response)
             if (response.success){
                 document.getElementById("rightSide").style.display = "flex";
                 document.getElementById("Intro-Left").style.display = "none";

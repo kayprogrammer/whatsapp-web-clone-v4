@@ -169,7 +169,7 @@
                     <div class="h-text">
                         <div class="head">
                             <h4 title="Olivia" aria-label="Olivia">{% if i.sender_id == user.id %}{{i.receiver.name}}{% else %}{{i.sender.name}}{% endif %}</h4>
-                            <p class="time">{{i.created_at|datetimefilter}}</p>
+                            <p class="time">{{i.created_at|threadsdatetimefilter}}</p>
                         </div>
                         <div class="message-chat">
                             <div class="chat-text-icon">
@@ -3152,7 +3152,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
         $.ajaxSetup({
-            headers: {"X-CSRFToken": '{{csrf_token}}'}
+            headers: {"X-CSRFToken": '{{ csrf_token() }}'}
         })
     </script>
     <script src="{{ url_for('static', filename = 'js/app.js') }}"></script>

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask_admin import Admin
 from flask_migrate import Migrate
 from flask_admin.contrib.sqla import ModelView
@@ -56,3 +56,7 @@ def create_app(config):
 
 app = create_app(config)
 app.app_context().push()
+
+@app.route('/', methods=['GET'])
+def index():
+    return redirect(url_for('chat_router.home'))

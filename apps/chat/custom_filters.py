@@ -6,7 +6,7 @@ from flask_login import current_user
 from . views import chat_router
 
 @chat_router.app_template_filter()
-def datetimefilter(value, format="%I:%M %p"):
+def threadsdatetimefilter(value, format="%I:%M %p"):
     tzname = current_user.tzname
     tz = pytz.timezone(tzname) # timezone you want to convert to from UTC
 
@@ -26,6 +26,28 @@ def datetimefilter(value, format="%I:%M %p"):
         new_dt = local_dt.strftime('%d/%m/%Y')
 
     return new_dt
+
+@chat_router.app_template_filter()
+def dms_datetimefilter(date):
+    tzname = current_user.tzname
+    tz = pytz.timezone(tzname) # timezone you want to convert to from UTC
+
+    # Get current local time of user and date object in local time
+    utc = pytz.timezone('UTC')
+    current_date = utc.localize(datetime.utcnow(), is_dst=None).astimezone(pytz.utc)
+    current_date = current_date.astimezone(tz) 
+    
+    date_obj = date.astimezone(tz)
+
+    new_dt = date_obj
+    if current_date.date() == date_obj.date():
+        new_dt = 'Today'
+    elif current_date.day - date_obj.day == 1 and current_date.month == date_obj.month and current_date.year == date_obj.year:
+        new_dt = 'Yesterday'
+    else:
+        new_dt = date_obj.strftime('%d/%m/%Y')
+    return new_dt
+
 
 @chat_router.app_template_filter()
 def unread_messages_count(messages, other_user):
