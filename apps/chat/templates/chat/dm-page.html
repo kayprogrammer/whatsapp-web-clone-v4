@@ -108,6 +108,9 @@
                 </p>
             {% endif %}
         {% else %}
+            <div class="chat__date-wrapper">
+                <span class="chat__date">Today</span>
+            </div>
             <p class="chat__encryption-msg">
                 <svg width="10px" height="12px" viewBox="0 0 10 12" version="1.1"
                     xmlns="http://www.w3.org/2000/svg" class="chat__encryption-icon">
@@ -674,7 +677,7 @@
         })
     })
 
-    const emojis = {
+    var emojis = {
         "faces": [
             "😊", "😊", "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃", "😉",
             "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙", "🥲", "😋", "😛", "😜", 

@@ -19,7 +19,7 @@ def before_request():
 
 @chat_router.route('/home')
 def home():
-    
+    print(current_user.tzname)
     user = current_user
     messages = Message.query.filter(
         or_(Message.sender_id == user.id, Message.receiver_id == user.id)
