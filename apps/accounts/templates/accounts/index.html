@@ -46,18 +46,19 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 	{% for category, message in messages %}
 	<script>
 	   
-	Swal.fire({
+	   Swal.fire({
  
-		   title:"{{ category.title() }}!",
-		   // success , error , warning ,info
- 
-		   text: "{{ message }}",
-		   // Custom message flashed from your flask routes
- 
-		   icon: "{{ category }}" == "danger" ? "error" : "{{ category }}"
-		   // success , error , warning ,info
- 
-	})
+		title: "{{ category.heading.title() }}",
+		// success , error , warning ,info
+
+		text: "{{ message }}",
+		// Custom message flashed from your flask routes
+
+		icon:"{{ category.tag }}",
+		// success , error , warning ,info
+		timer: 3500
+
+	   })
  
 	</script>
 	{% endfor %}

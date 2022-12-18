@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, render_template_string, jsonify
+from flask import Blueprint, render_template, request, session, render_template_string, jsonify, flash
 from flask_login import current_user
 from sqlalchemy import or_, case, literal_column
 from apps.accounts.decorators import login_required
@@ -19,6 +19,7 @@ def before_request():
 
 @chat_router.route('/home')
 def home():
+    
     print(current_user.tzname)
     user = current_user
     messages = Message.query.filter(

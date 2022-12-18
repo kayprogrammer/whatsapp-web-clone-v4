@@ -14,7 +14,7 @@ def logout_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.is_authenticated:
-            flash('You must logout first!', 'warning')
+            flash("You must logout first!", {"heading": "Not allowed", "tag": "info"})
             return redirect(session.get('current_path'))
         return f(*args, **kwargs)
     return decorated_function

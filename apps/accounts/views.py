@@ -34,13 +34,13 @@ def register():
 def activate_user(token, user_id):
     user_obj = User.query.filter_by(id=user_id).first()
     if not user_obj:
-        flash('You entered an invalid link!', 'error')
+        flash("You entered an invalid link!", {"heading": "Invalid", "tag": "error"})
         return redirect(url_for("accounts_router.login"))
     user = Token.verify_activation_token(token)
     if not user:
         return render_template('accounts/email-activation-failed.html', email=user_obj.email)
     if user.id != user_obj.id:
-        flash('You entered an invalid link!', 'error')
+        flash("You entered an invalid link!", {"heading": "Invalid", "tag": "error"})
         return redirect(url_for("accounts_router.login"))
 
     user.current_activation_jwt['used'] = True
@@ -50,10 +50,10 @@ def activate_user(token, user_id):
     if not user.is_phone_verified:
         Util.send_sms_otp(user)
         session['verification_phone'] = user.phone
-        flash('Activation successful!. Verify your phone now!', 'success')
+        flash("Activation successful!. Verify your phone now!", {"heading": "Done", "tag": "success"})
         return redirect(url_for('accounts_router.verify_otp'))
 
-    flash('Activation successful!. You can login now!', 'success')
+    flash("Activation successful!.", {"heading": "Done", "tag": "success"})
     Util.send_welcome_email(request, user)
     return redirect(url_for("accounts_router.login"))
 
@@ -63,10 +63,10 @@ def resend_activation_email():
     email = request.cookies.get('activation_email')
     user_obj = User.query.filter_by(email=email).first()
     if not user_obj:
-        flash('Something went wrong!', 'error')
+        flash("Something went wrong!.", {"heading": "error", "tag": "error"})
         return redirect(url_for("accounts_router.login"))
     if user_obj.is_email_verified:
-        flash('Email address already verified!', 'warning')
+        flash("Your email address has already been verified!.", {"heading": "Verified", "tag": "info"})
         return redirect(url_for("accounts_router.login"))
 
     Util.send_verification_email(request, user_obj)
@@ -77,11 +77,11 @@ def resend_activation_email():
 def verify_otp():
     phone = session.get('verification_phone')
     if not phone:
-        flash('Not allowed', 'error')
+        flash("Back to login!.", {"heading": "Error!", "tag": "error"})
         return redirect(url_for('accounts_router.login'))
     form = OtpVerificationForm(request.form)
     if form.validate_on_submit():
-        flash('Verification complete! You can login now!', 'success')
+        flash("You can login now.", {"heading": "Verification complete!", "tag": "success"})
         return redirect(url_for('accounts_router.login'))
     return render_template('accounts/otp-verification.html', form=form)
 
@@ -90,18 +90,18 @@ def verify_otp():
 def resend_otp():
     phone = session.get('verification_phone')
     if not phone:
-        flash('Something went wrong', 'error')
+        flash("Something went wrong.", {"heading": "Error!", "tag": "info"})
         return redirect(url_for('accounts_router.login'))
     user = User.query.filter_by(phone=phone).first()
     if not user:
-        flash('Invalid user', 'error')
+        flash("Invalid user.", {"heading": "Error!", "tag": "error"})
         return redirect(url_for('accounts_router.login'))
     if user.is_phone_verified:
-        flash('Phone number already verified!', 'warning')
+        flash("Your phone number has already been verified.", {"heading": "Already verified!", "tag": "info"})
         return redirect(url_for('accounts_router.login'))
     
     Util.send_sms_otp(user)
-    flash('New Otp sent!', 'success')
+    flash("A new otp has been sent to your phone number.", {"heading": "Sent!", "tag": "success"})
     return redirect(url_for('accounts_router.verify_otp'))
 
 
@@ -113,11 +113,11 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email_or_phone.data).first() or User.query.filter_by(phone=form.email_or_phone.data).first()
         if not user:
-            flash('Invalid credentials', 'error')
+            flash("Invalid credentials.", {"heading": "Error!", "tag": "error"})
             return redirect(url_for('accounts_router.login'))
         password_check = user.check_password(form.password.data)
         if password_check == False:
-            flash('Invalid credentials', 'error')
+            flash("Invalid credentials.", {"heading": "Error!", "tag": "error"})
             return redirect(url_for('accounts_router.login')) 
 
         if not user.is_email_verified:
@@ -159,12 +159,12 @@ def verify_password_reset_token(token, user_id):
     try:
         user_obj = User.query.filter_by(id=user_id).first()
     except:
-        flash('You entered an invalid link!', 'error')
+        flash("You entered an invalid link.", {"heading": "Error!", "tag": "error"})
         return redirect(url_for("accounts_router.login"))
     user = Token.verify_reset_token(token)
     
     if user and user.id != user_obj.id:
-        flash('You entered an invalid link!', 'error')
+        flash("You entered an invalid link.", {"heading": "Error!", "tag": "error"})
         return redirect(url_for("accounts_router.login"))
     elif user and user.id == user_obj.id:
         session['password_reset_email'] = user_obj.email
@@ -177,7 +177,7 @@ def reset_password():
     email=session.get('password_reset_email')
     user = User.query.filter_by(email=email).first()
     if not user:
-        flash('Not allowed!', 'error')
+        flash("Not allowed.", {"heading": "Error!", "tag": "error"})
         return redirect(url_for('accounts_router.login'))
     detail = 'valid_token'
     form = PasswordResetForm(request.form)
@@ -185,7 +185,7 @@ def reset_password():
         if user:
             user.password = form.newpassword.data
             db.session.commit()
-            flash('Password reset successful', 'success')
+            flash("Your password has been reset.", {"heading": "Success!", "tag": "success"})
             session['password_reset_email'] = None
             return redirect(url_for("accounts_router.login"))
     return render_template('accounts/password-reset.html', detail=detail, form=form, email=email)
@@ -196,7 +196,7 @@ def resend_password_token(email):
     detail = 'third_view'
     user = User.query.filter_by(email=email).first()
     if not user:
-        flash('Something went wrong!', 'error')
+        flash("Something went wrong.", {"heading": "Error!", "tag": "error"})
         return redirect(url_for("accounts_router.login"))
     
     Util.send_password_reset_email(request, user)
