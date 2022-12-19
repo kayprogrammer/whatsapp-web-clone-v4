@@ -177,12 +177,12 @@
                                 <span class="thanks">{{i.text}}</span>
                                 <div class="unread">
                                     {% if i.sender_id == user.id %}
-                                        {% if messages|unread_messages_count(i.receiver) > 0 %}
-                                            <span class="numb">{{messages|unread_messages_count(i.receiver)}}</span>
+                                        {% if messages|unread_messages_count(i.receiver_id) > 0 %}
+                                            <span class="numb">{{messages|unread_messages_count(i.receiver_id)}}</span>
                                         {% endif %}
                                     {% else %}
-                                        {% if messages|unread_messages_count(i.sender) > 0 %}
-                                            <span class="numb">{{messages|unread_messages_count(i.sender) }}</span>
+                                        {% if messages|unread_messages_count(i.sender_id) > 0 %}
+                                            <span class="numb">{{messages|unread_messages_count(i.sender_id) }}</span>
                                         {% endif %}
                                     {% endif %}
                                     <div class="icon-more">

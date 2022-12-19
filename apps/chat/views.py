@@ -20,7 +20,6 @@ def before_request():
 @chat_router.route('/home')
 def home():
     
-    print(current_user.tzname)
     user = current_user
     messages = Message.query.filter(
         or_(Message.sender_id == user.id, Message.receiver_id == user.id)
@@ -52,6 +51,7 @@ def show_dms():
         or_(Message.sender_id == friend.id, Message.receiver_id == friend.id)
     )
     messages.filter_by(sender_id=friend.id).update(dict(is_read=True))
+    db.session.commit()
     messages = messages.order_by(Message.created_at)
     response = dict()
     response['success'] = True

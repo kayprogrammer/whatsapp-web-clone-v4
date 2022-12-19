@@ -20,13 +20,16 @@ class Message(TimeStampedUUIDModel):
 
     is_read = db.Column(db.Boolean, default=False)
 
-    @hybrid_property
+    # def __init__(self, sender_id, receiver_id, text, **kwargs):
+    #     super().__init__(sender_id=sender_id, receiver_id=receiver_id, text=text, **kwargs)
+
+    @property
     def sender(self):
         return User.query.filter_by(id=self.sender_id).first()
 
-    @hybrid_property
+    @property
     def receiver(self):
         return User.query.filter_by(id=self.receiver_id).first()
 
     def __repr__(self):
-        return f"Message by {self.sender_id} to {self.receiver_id} : {self.text}"
+        return f"Message by {self.sender.name} to {self.receiver.name} : {self.text}"
